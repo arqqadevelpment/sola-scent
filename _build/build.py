@@ -168,7 +168,9 @@ def review_card(i, name, product, text, initials, color):
     img = f"assets/img/reviews/client-{i+1}.jpg"
     slug = {"Ancient Amber": "ancient-amber", "Mon Cherry": "mon-cherry", "Apple Pine": "apple-pine"}[product]
     dark = f"assets/img/sig-{slug}.jpg"   # dark texture placeholder; a real client photo (above) shows on top when present
-    return (f'<figure class="rev-card{more}"><div class="client"><span class="avatar" style="--c:{color};background-image:url({img}),url({dark})"><b>{initials}</b></span>'
+    # only reference the client photo if the file exists (avoids 404s); otherwise show the dark texture
+    bg = (f"url({img}),url({dark})" if os.path.exists(os.path.join(OUT, img)) else f"url({dark})")
+    return (f'<figure class="rev-card{more}"><div class="client"><span class="avatar" style="--c:{color};background-image:{bg}"><b>{initials}</b></span>'
             f'<div><figcaption class="who">{name}</figcaption><span class="ey">Bought · {product}</span></div></div>'
             f'<p class="stars" aria-label="5 out of 5 stars">★★★★★</p><blockquote>{text}</blockquote></figure>')
 
