@@ -1,14 +1,51 @@
-# Only the website and its build script are versioned.
-# Everything else in this folder (brand PDFs, reference screenshots, drafts) stays local.
+# ── Only the website, its generator and deploy config are versioned ──────────
+# Everything else in this local folder (brand PDFs, reference screenshots,
+# wireframes, drafts) stays on the author's computer.
 /*
 !/.gitignore
+!/README.md
+!/vercel.json
 !/solascent-website/
 !/_build/
 
-# Inside the site: only the optimised images the pages actually use.
-# Loose source files directly in assets/ (large PNGs, internal PDF) stay local.
+# Inside the site: only the optimised images the pages use.
+# Loose source files directly in assets/ (large PNGs, internal PDFs) stay local.
 /solascent-website/assets/*
 !/solascent-website/assets/img/
 
-.DS_Store
+# ── Build output / generated folders (never commit) ──────────────────────────
+dist/
+build/
+out/
+.next/
+.nuxt/
+.svelte-kit/
+.output/
+.cache/
+.parcel-cache/
+coverage/
+
+# ── Dependencies ─────────────────────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+.venv/
+venv/
 __pycache__/
+*.pyc
+
+# ── Secrets and local environment ────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ── Tooling / OS / logs ──────────────────────────────────────────────────────
+.vercel/
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+.idea/
+.vscode/
