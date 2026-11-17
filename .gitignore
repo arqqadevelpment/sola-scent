@@ -4,6 +4,8 @@
 /*
 !/.gitignore
 !/README.md
+!/NOTE.md
+!/CLAUDE.md
 !/vercel.json
 !/solascent-website/
 !/_build/
