@@ -1,0 +1,14 @@
+# Only the website and its build script are versioned.
+# Everything else in this folder (brand PDFs, reference screenshots, drafts) stays local.
+/*
+!/.gitignore
+!/solascent-website/
+!/_build/
+
+# Inside the site: only the optimised images the pages actually use.
+# Loose source files directly in assets/ (large PNGs, internal PDF) stay local.
+/solascent-website/assets/*
+!/solascent-website/assets/img/
+
+.DS_Store
+__pycache__/
