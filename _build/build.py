@@ -115,8 +115,8 @@ DRAWER = '''<div class="scrim" id="scrim" data-close-cart></div>
 </aside>
 '''
 
-def scripts():
-    return f'<script src="js/config.js?v={V_CFG}"></script>\n<script src="js/main.js?v={V_JS}"></script>\n</body>\n</html>\n'
+def scripts(extra=""):
+    return f'<script src="js/config.js?v={V_CFG}"></script>\n<script src="js/main.js?v={V_JS}"></script>\n{extra}</body>\n</html>\n'
 
 def contour(c):
     return (f'<svg class="contour" viewBox="0 0 1000 120" preserveAspectRatio="none" fill="none" aria-hidden="true">'
@@ -208,7 +208,8 @@ def page_home():
     reviews = "".join(review_card(i, *r) for i, r in enumerate(REVIEWS))
     body = f'''<main id="main">
 <section class="hero-brand t-dark" aria-labelledby="h1">
-  <div class="bg"><img src="assets/img/hero.jpg?v={_v("assets/img/hero.jpg")}" alt="A woman reading in a sunlit living room beside a Solascent reed diffuser" fetchpriority="high"></div>
+  <div class="bg"><img src="assets/img/hero.jpg?v={_v("assets/img/hero.jpg")}" alt="Three Solascent reed diffusers on a dark reflective surface: Cherry Mongolia, Apple Cinnamon and Dark Amber" fetchpriority="high">
+    <canvas class="fluid" aria-hidden="true" data-mask="assets/img/hero-mask.png?v={_v("assets/img/hero-mask.png")}"></canvas></div>
   <div class="tx"><h1 class="sr" id="h1"><span class="ln">Every Space Has a Soul.</span><em class="ln">Give It a Scent.</em></h1>
     <p>Thoughtfully crafted home fragrances to make every space unmistakably yours.</p>
     <div class="cta"><a class="btn" href="shop.html">Shop Now →</a></div></div>
@@ -273,7 +274,7 @@ def page_home():
 '''
     return (head("SOLASCENT — Every Space Has a Soul. Give It a Scent.",
                  "Thoughtfully crafted home fragrances and diffusers designed to transform your atmosphere. Ancient Amber, Mon Cherry and Apple Pine reed diffusers.", "t-dark home")
-            + header("Home") + body + footer() + DRAWER + scripts())
+            + header("Home") + body + footer() + DRAWER + scripts('<script src="js/fluid.js?v=' + _v("js/fluid.js") + '"></script>\n'))
 
 NOTES = {"ancient-amber": "Saffron · Bergamot · Amber · Cedarwood · Vanilla", "mon-cherry": "Cherry · Magnolia · Rose · Musk · Amber", "apple-pine": "Green Apple · Cinnamon · Pine · Cedarwood · Musk"}
 

@@ -624,3 +624,26 @@ h1,h2,h3,p{margin:0}
   #collections .pbg{bottom:auto;height:58svh}
   #collections .pbg img{position:absolute;height:100%}
 }
+
+/* home hero: new photo shown whole (cover, no zoom), full-screen height, responsive */
+.home .hero-brand{min-height:100vh;min-height:100svh;background:#000}
+.home .hero-brand .bg img{object-position:center center}
+.home .hero-brand::before{background:rgba(0,0,0,.18)}
+@media (max-width:900px) and (orientation:portrait){
+  .home .hero-brand{place-items:end center}
+  .home .hero-brand .bg{bottom:auto;height:56svh}
+  .home .hero-brand .bg img{object-position:50% center}
+  .home .hero-brand .bg::after{content:"";position:absolute;left:0;right:0;bottom:0;height:30%;background:linear-gradient(180deg,rgba(0,0,0,0),#000)}
+  .home .hero-brand::before{display:none}
+  .home .hero-brand .tx{padding:20px 24px clamp(36px,7svh,64px)}
+}
+
+/* home hero: content sits a little lower (clear of the top of the photo) */
+@media (min-width:901px),(orientation:landscape){
+  .home .hero-brand .tx{padding-top:calc(var(--hh) + 100px);padding-bottom:40px}
+}
+
+/* hero fluid smoke: sits over the photo (screen blend = only adds light), hidden behind the diffusers by a mask in the shader */
+.hero-brand .bg{isolation:isolate}
+.hero-brand canvas.fluid{position:absolute;inset:0;width:100%;height:100%;mix-blend-mode:screen;pointer-events:none;opacity:0;transition:opacity 1.2s ease}
+.hero-brand canvas.fluid.on{opacity:1}
