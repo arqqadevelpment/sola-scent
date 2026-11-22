@@ -154,7 +154,6 @@
     var sio = new IntersectionObserver(function (es) {
       es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("go"); sio.unobserve(e.target); } });
     }, { threshold: 0.3 });
-    $$(".story-band").forEach(function (sec) { sec.classList.add("anim"); sio.observe(sec); });
     $$(".tl").forEach(function (t) { io.observe(t); });
   } else { $$(".tl").forEach(function (t) { t.classList.add("in"); }); }
 
@@ -198,6 +197,31 @@
           .catch(function () { btn.disabled = false; btn.textContent = "Send Message →"; $("#formErr").textContent = "Something went wrong. Please try again" + (C.email ? " or email " + C.email + "." : "."); });
       } else { setTimeout(function () { done(true); }, 600); }
     });
+  }
+
+  /* ---------- brand story: pinned, words fill in as you scroll; the right-hand content appears once the text is complete ---------- */
+  var sb = $("#story.story-band");
+  var sh = sb && $("[data-scrub]", sb);
+  if (sb && sh && !reduce) {
+    var stick = $(".sb-stick", sb), words = sh.textContent.trim().split(/\s+/);
+    sh.setAttribute("aria-label", words.join(" "));
+    sh.innerHTML = words.map(function (w) { return '<span class="sw" aria-hidden="true">' + w + "</span>"; }).join(" ");
+    var spans = $$(".sw", sh), sTick = false, bdOn = false;
+    var sDraw = function () {
+      sTick = false;
+      var span = sb.offsetHeight - stick.offsetHeight;
+      var p = span > 0 ? Math.min(1, Math.max(0, -sb.getBoundingClientRect().top / span)) : 1;
+      var t = Math.min(1, p / 0.62), n = spans.length;   // the text is complete at about 62% of the pinned scroll
+      spans.forEach(function (el, i) { el.style.setProperty("--l", Math.max(0, Math.min(1, t * (n + 1) - i)).toFixed(3)); });
+      var on = p >= 0.66;
+      if (on !== bdOn) { bdOn = on; sb.classList.toggle("bd-on", on); }
+    };
+    var sReq = function () { if (!sTick) { sTick = true; requestAnimationFrame(sDraw); } };
+    sb.classList.add("sc");
+    sDraw();
+    window.addEventListener("scroll", sReq, { passive: true });
+    window.addEventListener("resize", sReq);
+    window.addEventListener("load", sReq);
   }
 
   /* ---------- parallax sections ---------- */

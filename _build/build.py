@@ -54,21 +54,23 @@ def head(title, desc, theme, img="assets/img/ancient-amber.jpg", file=""):
 
 CART_SVG = '<svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 9h16l-1.2 13.2H6.2z"/><path d="M9 11V8a4 4 0 0 1 8 0v3"/></svg>'
 
-def lockup():
+def lockup(on_light=False):
+    # on_light: gold sun + dark lettering, for light headers (Mon Cherry page)
+    src = "logo-lockup-dark.png" if on_light else "logo-lockup-light.png"
     return ('<a class="logo center" href="index.html" aria-label="Solascent home">'
-            '<img src="assets/img/logo-lockup-light.png" alt="Solascent, the scent of nature" width="700" height="673"></a>')
+            f'<img src="assets/img/{src}" alt="Solascent — Space. Soul. Scent." width="700" height="673"></a>')
 
 def cart_btn(extra=""):
     return f'<button class="cart-btn" type="button" data-open-cart aria-label="Open cart"{extra}>{CART_SVG}<span class="badge" hidden>0</span></button>'
 
-def header(active):
+def header(active, on_light=False):
     cur = lambda n: ' aria-current="page"' if n == active else ""
-    left = "".join(f'<a href="{u}"{cur(n)}>{n}</a>' for n, u in NAV_L)
-    right = "".join(f'<a href="{u}"{cur(n)}>{n}</a>' for n, u in NAV_R)
+    left = "".join(f'<a href="{u}"{cur(n)}>{SUB[n]}</a>' for n, u in NAV_L)
+    right = "".join(f'<a href="{u}"{cur(n)}>{"The Brand" if n == "About Us" else n}</a>' for n, u in NAV_R)
     mob = "".join(f'<a href="{u}"{cur(n)}>{n}<small>{SUB[n]}</small></a>' for n, u in NAV)
     return f'''<header class="site-header">
   <div class="hd-left"><button class="menu-btn" type="button" data-open-menu aria-label="Open menu">Menu</button><nav class="nav" aria-label="Collections">{left}</nav></div>
-  {lockup()}
+  {lockup(on_light)}
   <div class="hd-right"><nav class="nav" aria-label="Main">{right}</nav>{cart_btn()}</div>
 </header>
 <div class="sheet" id="sheet" aria-hidden="true" role="dialog" aria-label="Menu">
@@ -90,7 +92,7 @@ def footer():
     </form>
   </div>
   <div class="cols">
-    <div><a class="logo foot-logo" href="index.html" aria-label="Solascent home"><img src="assets/img/logo-lockup-light.png" alt="Solascent, the scent of nature" width="700" height="673" loading="lazy"></a></div>
+    <div><a class="logo foot-logo" href="index.html" aria-label="Solascent home"><img src="assets/img/logo-lockup-light.png" alt="Solascent — Space. Soul. Scent." width="700" height="673" loading="lazy"></a></div>
     <div><h2>Shop</h2><ul><li><a href="shop.html">Shop All</a></li><li><a href="index.html#collections">Collections</a></li><li>{ph("Gift Sets")}</li></ul></div>
     <div><h2>Support</h2><ul><li><a href="contact.html">Contact</a></li><li>{ph("FAQs")}</li><li>{ph("Shipping &amp; Returns")}</li><li><a href="index.html#care">Product Care</a></li></ul></div>
     <div><h2>Social Media</h2><ul><li>{ph("Instagram")}</li><li>{ph("TikTok")}</li><li>{ph("Facebook")}</li></ul></div>
@@ -170,27 +172,28 @@ def review_card(i, name, product, text, initials, color):
     dark = f"assets/img/sig-{slug}.jpg"   # dark texture placeholder; a real client photo (above) shows on top when present
     # only reference the client photo if the file exists (avoids 404s); otherwise show the dark texture
     bg = (f"url({img}),url({dark})" if os.path.exists(os.path.join(OUT, img)) else f"url({dark})")
-    return (f'<figure class="rev-card{more}"><div class="client"><span class="avatar" style="--c:{color};background-image:{bg}"><b>{initials}</b></span>'
+    has_photo = os.path.exists(os.path.join(OUT, img))
+    mark = "" if has_photo else f"<b>{initials}</b>"   # initials only as a fallback when no photo exists
+    return (f'<figure class="rev-card{more}"><div class="client"><span class="avatar" style="--c:{color};background-image:{bg}">{mark}</span>'
             f'<div><figcaption class="who">{name}</figcaption><span class="ey">Bought · {product}</span></div></div>'
             f'<p class="stars" aria-label="5 out of 5 stars">★★★★★</p><blockquote>{text}</blockquote></figure>')
 
 def page_home():
-    worlds = ""
-    for i, slug in enumerate(ORDER):
-        f = F[slug]; w = WORLDS[slug]; rev = " rev" if i == 1 else ""
-        theme = HOME_THEME[slug]
-        if slug in SCENES:
-            fn, alt = SCENES[slug]
-            visual = (f'<div class="pl photo"><img src="assets/img/{fn}?v={_v("assets/img/" + fn)}" alt="{alt}" loading="lazy">' + fcard(slug) + '</div>')
-        else:
-            visual = plinth(slug, "Product master · scene photo to come", True)
-        worlds += f'''<section class="hero home-world {theme}{rev}" aria-labelledby="h-{slug}">
-  <div class="tx"><p class="ey">0{i+1} — {w["coll"]}</p>
-    <h3 class="sr" id="h-{slug}">{f["name"]}</h3><p>{w["desc"]}</p>
-    <div class="cta"><a class="btn" href="{slug}.html">Explore {f["name"]} →</a></div></div>
-  {visual}
-</section>
-'''
+    # three collection panels: side by side, no gaps; hovered panel opens wide (accordion), others narrow
+    TRIO = {
+        "ancient-amber": ("Sacred Amber", "An exploration of rich amber, warm spices, and sensual woods, creating a deep and lasting atmosphere.", "Warm · Spiced · Resinous"),
+        "mon-cherry": ("The Secret Garden", "A whimsical world of blooming florals, luscious fruits, and enchanting combinations.", "Floral · Fruity · Luminous"),
+        "apple-pine": ("Root &amp; Ripe", "Where juicy fruits meet aromatic spices and grounding woods. A balance of freshness and warmth.", "Fruity · Spiced · Woody"),
+    }
+    worlds = '<section class="trio" aria-label="Our collections">'
+    for slug in ["mon-cherry", "ancient-amber", "apple-pine"]:   # left, middle, right
+        fn = f"assets/img/trio-{slug}.jpg"
+        name, desc, notes = TRIO[slug]
+        worlds += (f'<article class="tr-p tr-{slug}"><img src="{fn}?v={_v(fn)}" alt="" decoding="async">'
+                   f'<p class="tr-t" aria-hidden="true">{name}</p>'
+                   f'<div class="tr-c"><h3 class="tr-h">{name}</h3><p class="tr-d">{desc}</p><p class="tr-n">{notes}</p>'
+                   f'<a class="btn tr-go" href="{slug}.html">Explore {name} &rarr;</a></div></article>')
+    worlds += '</section>\n'
     sig = ""
     for slug in ORDER:
         f = F[slug]; w = WORLDS[slug]
@@ -212,14 +215,16 @@ def page_home():
 </section>
 
 <section class="band t-light story-band" id="story" aria-labelledby="h-story">
-  <p class="ey">02 — Brand story</p>
-  <div class="story"><h2 class="sr" id="h-story" data-split>Some Places Stay With You. Some Scents Make Them.</h2>
-    <div class="bd"><p class="q">A familiar room. A quiet morning. A moment you wish could last a little longer.</p>
-      <p>We believe scent has the power to turn ordinary spaces into personal experiences. Through the art of fragrance, we bring atmosphere, emotion, and everyday rituals together.</p>
-      <p><a class="btn" href="about.html">Read more about Solascent →</a></p></div></div>
+  <div class="sb-stick">
+    <p class="ey">02 — Brand story</p>
+    <div class="story"><h2 class="sr" id="h-story" data-scrub>Some Places Stay With You. Some Scents Make Them.</h2>
+      <div class="bd"><p class="q">A familiar room. A quiet morning. A moment you wish could last a little longer.</p>
+        <p>We believe scent has the power to turn ordinary spaces into personal experiences. Through the art of fragrance, we bring atmosphere, emotion, and everyday rituals together.</p>
+        <p><a class="btn" href="about.html">Read more about Solascent →</a></p></div></div>
+  </div>
 </section>
 
-<section class="parallax" id="collections" data-parallax aria-labelledby="h-coll">
+<section class="parallax" id="collections" aria-labelledby="h-coll">
   <div class="pbg"><img src="assets/img/collections-bg.jpg?v={_v("assets/img/collections-bg.jpg")}" alt="A reed diffuser on a sunlit coffee table beside old books and a ceramic cup" loading="lazy"></div>
   <div class="pcon">
     <p class="ey">Discover our collections · Three worlds, three experiences</p>
@@ -257,8 +262,8 @@ def page_home():
   <p class="rev-cta"><button class="btn" type="button" data-reviews-toggle aria-expanded="false" aria-controls="revs">Read more</button></p>
 </section>
 
-<section class="closing t-dark" data-parallax aria-labelledby="h-close">
-  <div class="cbg pbg"><img src="assets/img/closing-bg.jpg?v={_v("assets/img/closing-bg.jpg")}" alt="A woman relaxing on a sofa in a sunlit living room beside a Solascent reed diffuser" loading="lazy"></div>
+<section class="closing t-dark" aria-labelledby="h-close">
+  <div class="cbg"><img src="assets/img/closing-bg.jpg?v={_v("assets/img/closing-bg.jpg")}" alt="A Solascent Dark Amber reed diffuser on driftwood beside cream orchids" loading="lazy"></div>
   <h2 class="sr" id="h-close">Make Yourself at Home.</h2>
   <p class="l1">Your space. Your rituals. Your atmosphere.</p>
   <p class="l2">Find the scent that makes it yours.</p>
@@ -314,7 +319,7 @@ def page_fragrance(slug):
   <div class="r"><span data-price="{slug}">{ph("Price")}</span><button class="btn" type="button" data-add="{slug}">Add to Cart</button></div></div>
 '''
     return (head(f'{f["name"]} Reed Diffuser — {f["tag"]} | Solascent', f'{f["name"]} premium reed diffuser by Solascent. {f["mood"]}', f["theme"], f"assets/img/{slug}.jpg")
-            + header(f["name"]) + body + footer() + DRAWER + scripts())
+            + header(f["name"], f["theme"] == "t-cherry") + body + footer() + DRAWER + scripts())
 
 def page_shop():
     cards = ""
