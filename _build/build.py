@@ -65,8 +65,12 @@ def cart_btn(extra=""):
 
 def header(active, on_light=False):
     cur = lambda n: ' aria-current="page"' if n == active else ""
-    left = "".join(f'<a href="{u}"{cur(n)}>{SUB[n]}</a>' for n, u in NAV_L)
-    right = "".join(f'<a href="{u}"{cur(n)}>{"The Brand" if n == "About Us" else n}</a>' for n, u in NAV_R)
+    aromas = "".join(f'<a href="{u}"{cur(n)}>{SUB[n]}</a>' for n, u in NAV_L)
+    in_aromas = ' aria-current="page"' if active in [n for n, _ in NAV_L] else ""
+    left = (f'<a href="shop.html"{cur("Shop")}>Shop</a>'
+            f'<div class="nav-dd"><button class="dd-btn" type="button" aria-haspopup="true" aria-expanded="false"{in_aromas}>The Aromas</button>'
+            f'<div class="dd-menu" role="menu">{aromas}</div></div>')
+    right = "".join(f'<a href="{u}"{cur(n)}>{"The Brand" if n == "About Us" else n}</a>' for n, u in NAV_R if n != "Shop")
     mob = "".join(f'<a href="{u}"{cur(n)}>{n}<small>{SUB[n]}</small></a>' for n, u in NAV)
     return f'''<header class="site-header">
   <div class="hd-left"><button class="menu-btn" type="button" data-open-menu aria-label="Open menu">Menu</button><nav class="nav" aria-label="Collections">{left}</nav></div>
@@ -200,11 +204,15 @@ def page_home():
         sig += f'''<a class="sig {f["theme"]}" href="{slug}.html"><div class="pl"><img src="assets/img/sig-product-{slug}.jpg?v={_v("assets/img/sig-product-" + slug + ".jpg")}" alt="{f["name"]} reed diffuser" loading="lazy"></div>
   <div class="mt" style="background-image:url(assets/img/sig-{slug}.jpg)"><p class="ey">{w["coll"]}</p><h3 class="sr">{f["name"]}</h3><p>{w["line"]}</p><p class="notes-line">{w["notes"]}</p><span class="lnk" style="margin-left:0">(Discover)</span></div></a>
 '''
-    care = "".join(f'<div><div class="nu" aria-hidden="true">{n}</div><h3>{t}</h3><p>{d}</p></div>' for n, t, d in [
-        ("01", "Set it up", "Remove the stopper and insert the reeds into the fragrance bottle. Allow them to absorb the fragrance for 5–6 hours."),
-        ("02", "Let the scent flow", "Place your diffuser in a suitable area where air can circulate naturally, allowing the fragrance to disperse throughout your space."),
-        ("03", "Refresh your fragrance", "Turn the reeds periodically to refresh the fragrance and maintain its presence."),
-        ("04", "Handle with care", "Keep away from direct sunlight, heat, and flames. Avoid contact with skin and eyes, and keep out of reach of children and pets. Do not ingest.")])
+    care_steps = [
+        ("01", "Set it up", "Remove the stopper and insert the reeds into the fragrance bottle. Allow them to absorb the fragrance for 5–6 hours.", "Hand inserting the reeds into the diffuser bottle"),
+        ("02", "Let the scent flow", "Place your diffuser in a suitable area where air can circulate naturally, allowing the fragrance to disperse throughout your space.", "Hand placing the diffuser on a console table"),
+        ("03", "Refresh your fragrance", "Turn the reeds periodically to refresh the fragrance and maintain its presence.", "Hand turning the reeds of the diffuser"),
+        ("04", "Handle with care", "Keep away from direct sunlight, heat, and flames. Avoid contact with skin and eyes, and keep out of reach of children and pets. Do not ingest.", "Hand setting the diffuser safely on a shelf")]
+    care = "".join(
+        f'<article class="ch-p ch-step"><div class="ch-tx"><div class="nu" aria-hidden="true">{n}</div><h3>{t}</h3><p>{d}</p></div>'
+        f'<div class="ch-im"><img src="assets/img/care-step-{i}.jpg?v={_v("assets/img/care-step-" + str(i) + ".jpg")}" alt="{alt}" width="1200" height="1490" decoding="async"></div></article>'
+        for i, (n, t, d, alt) in enumerate(care_steps, 1))
     reviews = "".join(review_card(i, *r) for i, r in enumerate(REVIEWS))
     body = f'''<main id="main">
 <section class="hero-brand t-dark" aria-labelledby="h1">
@@ -246,13 +254,22 @@ def page_home():
   <div class="sigs">{sig}</div>
 </section>
 
-<section class="band t-apple care-px" id="care" data-parallax aria-labelledby="h-care">
-  <div class="pbg"><img src="assets/img/care-bg.jpg?v={_v("assets/img/care-bg.jpg")}" alt="" loading="lazy"></div>
-  <p class="ey">05 — Product care · Make every scent last</p>
-  <h2 class="sr h2" id="h-care" style="margin-top:14px">Quality in Every Detail.</h2>
-  <p class="sub">A few simple steps can help you get the most out of your SOLASCENT diffuser and enjoy its fragrance throughout your space.</p>
-  <div class="steps four">{care}</div>
-  <p style="margin-top:50px"><a class="btn" href="#care">Explore Our Product Care Guide →</a></p>
+<section class="care-h t-apple" id="care" aria-labelledby="h-care">
+  <div class="ch-stick">
+    <div class="ch-bg"><img src="assets/img/care-bg.jpg?v={_v("assets/img/care-bg.jpg")}" alt="" loading="lazy"></div>
+    <div class="ch-track">
+      <article class="ch-p ch-intro">
+        <div class="ch-tx">
+          <p class="ey">05 — Product care · Make every scent last</p>
+          <h2 class="sr h2" id="h-care">Quality in Every Detail.</h2>
+          <p class="sub">A few simple steps can help you get the most out of your SOLASCENT diffuser and enjoy its fragrance throughout your space.</p>
+          <p class="ch-hint" aria-hidden="true">Scroll to explore <span>&rarr;</span></p>
+        </div>
+      </article>
+      {care}
+    </div>
+    <div class="ch-ui" aria-hidden="true"><span class="ch-count">01 / 04</span><div class="ch-bar"><i></i></div></div>
+  </div>
 </section>
 
 <section class="band t-light" aria-labelledby="h-real">

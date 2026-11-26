@@ -224,6 +224,66 @@
     window.addEventListener("load", sReq);
   }
 
+  /* ---------- product care: pinned slides that cross-fade smoothly as you scroll (no pushing, no snapping) ---------- */
+  var care = $("#care.care-h");
+  if (care && !reduce) {
+    var panels = $$(".ch-p", care), steps = panels.length - 1;
+    var bar = $(".ch-bar i", care), cnt = $(".ch-count", care);
+    var vh0 = 0, target = 0, cur = 0, running = false, lastT = 0;
+    var ease = function (x) { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
+    /* scroll budget (in screen heights): the opening page waits, every step holds still so it can be read, then fades slowly to the next */
+    var HOLD0 = 0.8, SEG = 1.5, HOLD = 0.5, HOLDEND = 0.7;      // HOLD = share of each segment spent standing still
+    var targetNow = function () {
+      var y = -care.getBoundingClientRect().top - HOLD0 * vh0;   // scrolled pixels after the opening hold
+      if (y <= 0) return 0;
+      var seg = SEG * vh0, k = Math.floor(y / seg);
+      if (k >= steps) return steps;
+      var f = (y - k * seg) / seg;                                // 0..1 inside this segment
+      return k + ease((f - HOLD) / (1 - HOLD));                   // stand still first, then glide to the next step
+    };
+    var paint = function () {
+      panels.forEach(function (el, i) {
+        var s = i - cur, a = Math.abs(s);
+        el.style.setProperty("--o", ease(1 - a * 2.1).toFixed(3));            // one slide fades out, then the next fades in: no overlapping text
+        el.style.setProperty("--s", Math.max(-1, Math.min(1, s)).toFixed(3));  // signed distance: drives a gentle drift
+        el.style.setProperty("--a", Math.min(1, a).toFixed(3));
+        el.style.zIndex = a < 0.5 ? 2 : 1;
+        el.style.pointerEvents = a < 0.5 ? "auto" : "none";
+      });
+      bar.style.transform = "scaleX(" + (cur / steps).toFixed(4) + ")";
+      var idx = Math.round(cur);
+      cnt.textContent = "0" + idx + " / 0" + steps;
+      cnt.classList.toggle("on", idx > 0);
+    };
+    var loop = function (now) {
+      var dt = Math.min(0.05, (now - lastT) / 1000 || 0.016); lastT = now;
+      target = targetNow();
+      cur += (target - cur) * (1 - Math.exp(-dt * 4));                          // ease toward the scroll position: slow and smooth even with jumpy wheel ticks
+      if (Math.abs(target - cur) < 0.0008) { cur = target; paint(); running = false; return; }
+      paint(); requestAnimationFrame(loop);
+    };
+    var kick = function () { if (!running) { running = true; lastT = performance.now(); requestAnimationFrame(loop); } };
+    var measure = function () {
+      vh0 = window.innerHeight;
+      care.style.height = ((HOLD0 + steps * SEG + HOLDEND + 1) * vh0) + "px";   // total pinned scroll: opening hold + steps + closing hold (+ the screen it sits on)
+      target = targetNow(); cur = target; paint();
+    };
+    care.classList.add("on");
+    measure();
+    window.addEventListener("scroll", kick, { passive: true });
+    window.addEventListener("resize", measure);
+    window.addEventListener("load", measure);
+  }
+
+  /* ---------- header dropdown ("The Aromas"): click toggles it (touch / keyboard), outside click or Esc closes ---------- */
+  $$(".nav-dd").forEach(function (dd) {
+    var btn = $(".dd-btn", dd);
+    var set = function (open) { dd.classList.toggle("open", open); btn.setAttribute("aria-expanded", open ? "true" : "false"); };
+    btn.addEventListener("click", function (e) { e.stopPropagation(); set(!dd.classList.contains("open")); });
+    document.addEventListener("click", function (e) { if (!dd.contains(e.target)) set(false); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") set(false); });
+  });
+
   /* ---------- parallax sections ---------- */
   var par = $$("[data-parallax]");
   if (par.length && !reduce) {
